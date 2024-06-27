@@ -21,7 +21,6 @@ use fs_err::tokio as fs;
 use omicron_zone_package::config::Config;
 use once_cell::sync::Lazy;
 use semver::Version;
-use slog::debug;
 use slog::error;
 use slog::info;
 use slog::Drain;
@@ -175,14 +174,10 @@ async fn main() -> Result<()> {
     let drain = slog_async::Async::new(drain).build().fuse();
     let logger = Logger::root(drain, slog::o!());
 
-    // Change the working directory to the workspace root.
-    debug!(logger, "changing working directory to {}", *WORKSPACE_DIR);
-    std::env::set_current_dir(&*WORKSPACE_DIR)
-        .context("failed to change working directory to workspace root")?;
-
     // Determine the target directory.
     let target_dir = cargo_metadata::MetadataCommand::new()
         .no_deps()
+        .current_dir(&*WORKSPACE_DIR)
         .exec()
         .context("failed to get cargo metadata")?
         .target_directory;
@@ -267,15 +262,13 @@ async fn main() -> Result<()> {
         if !args.ignore_helios_origin {
             // check that our helios clone is up to date
             Command::new(&args.git_bin)
-                .arg("-C")
-                .arg(&args.helios_dir)
                 .args(["fetch", "--no-write-fetch-head", "origin", "master"])
+                .current_dir(&args.helios_dir)
                 .ensure_success(&logger)
                 .await?;
             let stdout = Command::new(&args.git_bin)
-                .arg("-C")
-                .arg(&args.helios_dir)
                 .args(["rev-parse", "HEAD", "origin/master"])
+                .current_dir(&args.helios_dir)
                 .ensure_stdout(&logger)
                 .await?;
             let mut lines = stdout.lines();

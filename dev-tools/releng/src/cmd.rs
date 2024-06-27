@@ -24,6 +24,7 @@ pub(crate) struct Command {
 impl Command {
     pub(crate) fn new(program: impl AsRef<OsStr>) -> Command {
         Command { inner: tokio::process::Command::new(program) }
+            .current_dir(&*crate::WORKSPACE_DIR)
     }
 
     pub(crate) fn arg(mut self, arg: impl AsRef<OsStr>) -> Command {
