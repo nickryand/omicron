@@ -7,8 +7,8 @@
 # Only include "our own sled" in the bootstrap network
 bootstrap_discovery.type = "only_ours"
 
-ntp_servers = [ "0.pool.ntp.org" ]
-dns_servers = [ "1.1.1.1", "9.9.9.9" ]
+ntp_servers = [ "ntp.eng.oxide.computer" ]
+dns_servers = [ "172.20.0.1" ]
 
 # Delegated external DNS zone name
 #
