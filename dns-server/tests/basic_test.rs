@@ -16,12 +16,22 @@ use std::{
     net::Ipv6Addr,
     net::{IpAddr, Ipv4Addr},
 };
+use trust_dns_client::{
+    client::{Client as TrustDnsClient, SyncClient},
+    error::ClientError,
+    udp::UdpClientConnection,
+};
+
+use trust_dns_proto::{
+    op::ResponseCode,
+    rr::{DNSClass, Name, RecordType},
+    xfer::DnsResponse,
+};
+use trust_dns_resolver::config::{
+    NameServerConfig, Protocol, ResolverConfig, ResolverOpts,
+};
 use trust_dns_resolver::error::ResolveErrorKind;
 use trust_dns_resolver::TokioAsyncResolver;
-use trust_dns_resolver::{
-    config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
-    proto::op::ResponseCode,
-};
 
 const TEST_ZONE: &'static str = "oxide.internal";
 
@@ -86,6 +96,52 @@ pub async fn aaaa_crud() -> Result<(), anyhow::Error> {
 }
 
 #[tokio::test]
+pub async fn answers_match_question() -> Result<(), anyhow::Error> {
+    let test_ctx = init_client_server("not_wrong_record_answers").await?;
+    let client = &test_ctx.client;
+
+    // records should initially be empty
+    let records = dns_records_list(client, TEST_ZONE).await?;
+    assert!(records.is_empty());
+
+    // add an aaaa record
+    let name = "devron".to_string();
+    let addr = Ipv6Addr::new(0xfd, 0, 0, 0, 0, 0, 0, 0x1);
+    let aaaa = DnsRecord::Aaaa(addr);
+    let input_records = HashMap::from([(name.clone(), vec![aaaa])]);
+    dns_records_create(client, TEST_ZONE, input_records.clone()).await?;
+
+    // read back the aaaa record
+    let records = dns_records_list(client, TEST_ZONE).await?;
+    assert_eq!(input_records, records);
+
+    let name = Name::from_ascii(&(name + "." + TEST_ZONE + "."))
+        .expect("can construct name for query");
+
+    // it turns out `trust-dns-resolver`'s internal CachingClient will
+    // transparently correct the server misbehavior "server sent AAAA answers to
+    // an A query": the caching client will cache the extra record, then
+    // determine that there are no A records to respond with, and send a
+    // matching response.
+    //
+    // so, instead, `raw_dns_client_query` will let us see an actual server
+    // misbehavior, if one occurs.
+    let response = raw_dns_client_query(
+        test_ctx.dns_server.local_address(),
+        name,
+        RecordType::A,
+    )
+    .await
+    .expect("test query is ok");
+    assert_eq!(response.header().response_code(), ResponseCode::NoError);
+    assert_eq!(response.answers(), &[]);
+    assert_eq!(response.additionals(), &[]);
+
+    test_ctx.cleanup().await;
+    Ok(())
+}
+
+#[tokio::test]
 pub async fn srv_crud() -> Result<(), anyhow::Error> {
     let test_ctx = init_client_server("srv_crud").await?;
     let client = &test_ctx.client;
@@ -97,6 +153,7 @@ pub async fn srv_crud() -> Result<(), anyhow::Error> {
 
     // add a srv record
     let name = "hromi".to_string();
+    let test_fqdn = name.clone() + "." + TEST_ZONE + ".";
     let target = "outpost47";
     let srv = Srv {
         prio: 47,
@@ -121,8 +178,13 @@ pub async fn srv_crud() -> Result<(), anyhow::Error> {
     )]);
     dns_records_create(client, TEST_ZONE, input_records.clone()).await?;
 
-    // resolve the srv
-    let response = resolver.srv_lookup(name + "." + TEST_ZONE + ".").await?;
+    // resolve the srv. we'll test this in two ways:
+    // * the srv record as seen through `trust_dns_resolver`, the higher-level
+    //   interface we use in many places
+    // * the srv record as seen through `trust_dns_client`, to double-check that
+    //   the exact DNS response has the answers/additionals sections as we'd
+    //   expect it to be
+    let response = resolver.srv_lookup(&test_fqdn).await?;
     let srvr = response.iter().next().expect("no srv records returned!");
     assert_eq!(srvr.priority(), srv.prio);
     assert_eq!(srvr.weight(), srv.weight);
@@ -131,6 +193,27 @@ pub async fn srv_crud() -> Result<(), anyhow::Error> {
     let mut aaaa_records = response.ip_iter().collect::<Vec<_>>();
     aaaa_records.sort();
     assert_eq!(aaaa_records, [IpAddr::from(addr1), IpAddr::from(addr2)]);
+
+    // OK, through `trust_dns_resolver` everything looks right. now double-check
+    // that the additional records really do come back in the "Additionals"
+    // section of the response.
+
+    let name = trust_dns_client::rr::domain::Name::from_ascii(&test_fqdn)
+        .expect("can construct name for query");
+
+    let response = raw_dns_client_query(
+        test_ctx.dns_server.local_address(),
+        name,
+        RecordType::SRV,
+    )
+    .await
+    .expect("test query is ok");
+    assert_eq!(response.header().response_code(), ResponseCode::NoError);
+    assert_eq!(response.answers().len(), 1);
+    assert_eq!(response.answers()[0].record_type(), RecordType::SRV);
+    assert_eq!(response.additionals().len(), 2);
+    assert_eq!(response.additionals()[0].record_type(), RecordType::AAAA);
+    assert_eq!(response.additionals()[1].record_type(), RecordType::AAAA);
 
     test_ctx.cleanup().await;
     Ok(())
@@ -478,4 +561,37 @@ async fn dns_records_list(
         .find(|z| z.zone_name == zone_name)
         .map(|z| z.records)
         .unwrap_or_else(HashMap::new))
+}
+
+/// issue a DNS query of `record_ty` records for `name`.
+///
+/// in most tests we just use `trust-dns-resolver` for a higher-level interface
+/// to making DNS queries and handling responses. this is also the crate used
+/// elsewhere to handle DNS responses in Omicron. however, it is slightly
+/// higher-level than the actual wire response we produce from the DNS server in
+/// this same crate; to assert on responses we send on the wire, this issues a
+/// query using `trust-dns-client` and returns the corresponding `DnsResponse`.
+// FIXME(ixi): while `trust-dns-client` has an `AsyncClient` which theoretically
+// integrates nicely with tokio use in this test, I can't figure out how to
+// instantiate it! `SyncClient` is just as good but makes for a slightly messier
+// test.
+async fn raw_dns_client_query(
+    resolver_addr: std::net::SocketAddr,
+    name: Name,
+    record_ty: RecordType,
+) -> Result<DnsResponse, ClientError> {
+    let dns_client_conn = UdpClientConnection::new(resolver_addr)
+        .expect("can prepare UdpClientConnection");
+    let trust_client = SyncClient::new(dns_client_conn);
+
+    tokio::task::spawn_blocking(move || {
+        // query for an A record. the answer we expect is:
+        // * no error: the domain exists, so NXDOMAIN would be wrong
+        // * no answers: we ask specifically for a record type the server does not have
+        // * no additionals: the server could return AAAA records as additionals
+        //   to an A query, but does not currently.
+        trust_client.query(&name, DNSClass::IN, record_ty)
+    })
+    .await
+    .expect("query and test is ok")
 }
