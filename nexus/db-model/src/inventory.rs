@@ -918,6 +918,31 @@ impl InvNvmeDiskFirmware {
             }),
         }
     }
+
+    /// Attempt to read the current firmware version.
+    pub fn current_version(&self) -> Option<&str> {
+        match self.active_slot.0 {
+            // be paranoid that we have a value within the NVMe spec
+            slot @ 1..=7 => self
+                .slot_firmware_versions
+                .get(usize::from(slot) - 1)
+                .and_then(|v| v.as_deref()),
+            _ => None,
+        }
+    }
+
+    /// Attempt to read the staged firmware version that will be active upon
+    /// next device reset.
+    pub fn next_version(&self) -> Option<&str> {
+        match self.next_active_slot {
+            // be paranoid that we have a value within the NVMe spec
+            Some(slot) if slot.0 <= 7 && slot.0 >= 1 => self
+                .slot_firmware_versions
+                .get(usize::from(slot.0) - 1)
+                .and_then(|v| v.as_deref()),
+            _ => None,
+        }
+    }
 }
 
 /// See [`nexus_types::inventory::Zpool`].

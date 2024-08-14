@@ -4354,40 +4354,12 @@ async fn cmd_db_inventory_physical_disks(
         .context("loading physical disks")?;
 
     let rows = disks.into_iter().map(|(disk, firmware)| {
-        let mut active_firmware = "UNKNOWN".to_string();
-        let mut next_firmware = String::new();
-
-        'firmware: {
-            // Ensure we have matching firmware information for a physical disk.
-            let Some(firmware) = firmware else {
-                break 'firmware;
+        let (active_firmware, next_firmware) =
+            if let Some(firmware) = firmware.as_ref() {
+                (firmware.current_version(), firmware.next_version())
+            } else {
+                (None, None)
             };
-
-            // Attempt to read the fw version for the active slot.
-            if let Some(slot_info) = &firmware
-                .slot_firmware_versions
-                .get(firmware.active_slot.0 as usize - 1)
-            {
-                if let Some(fw_ver) = slot_info {
-                    active_firmware = fw_ver.clone();
-                }
-            };
-
-            // If we don't have firmware staged for next reset break early.
-            let Some(next_slot) = firmware.next_active_slot else {
-                break 'firmware;
-            };
-
-            // We have firmware staged for the next reset so attempt to read
-            // the fw version.
-            if let Some(slot_info) =
-                &firmware.slot_firmware_versions.get(next_slot.0 as usize - 1)
-            {
-                if let Some(fw_ver) = slot_info {
-                    next_firmware = fw_ver.clone();
-                }
-            }
-        }
 
         DiskRow {
             inv_collection_id: disk.inv_collection_id.into_untyped_uuid(),
@@ -4397,8 +4369,8 @@ async fn cmd_db_inventory_physical_disks(
             model: disk.model.clone(),
             serial: disk.serial.clone(),
             variant: format!("{:?}", disk.variant),
-            firmware: active_firmware,
-            next_firmware,
+            firmware: active_firmware.unwrap_or("UNKNOWN").to_string(),
+            next_firmware: next_firmware.unwrap_or("").to_string(),
         }
     });
 
