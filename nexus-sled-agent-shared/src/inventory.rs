@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 // Export this type for convenience -- this way, dependents don't have to
 // depend on sled-hardware-types.
 pub use sled_hardware_types::Baseboard;
+use strum::EnumIter;
 use uuid::Uuid;
 
 /// Identifies information about disks which may be attached to Sleds.
@@ -142,15 +143,26 @@ pub enum OmicronZoneType {
         snat_cfg: SourceNatConfig,
     },
 
+    /// Type of clickhouse zone used for a single node clickhouse deployment
     Clickhouse {
         address: SocketAddrV6,
         dataset: OmicronZoneDataset,
     },
 
+    /// A zone used to run a Clickhouse Keeper node
+    ///
+    /// Keepers are only used in replicated clickhouse setups
     ClickhouseKeeper {
         address: SocketAddrV6,
         dataset: OmicronZoneDataset,
     },
+
+    /// A zone used to run a Clickhouse Server in a replicated deployment
+    ClickhouseServer {
+        address: SocketAddrV6,
+        dataset: OmicronZoneDataset,
+    },
+
     CockroachDb {
         address: SocketAddrV6,
         dataset: OmicronZoneDataset,
@@ -220,6 +232,9 @@ impl OmicronZoneType {
             OmicronZoneType::ClickhouseKeeper { .. } => {
                 ZoneKind::ClickhouseKeeper
             }
+            OmicronZoneType::ClickhouseServer { .. } => {
+                ZoneKind::ClickhouseServer
+            }
             OmicronZoneType::CockroachDb { .. } => ZoneKind::CockroachDb,
             OmicronZoneType::Crucible { .. } => ZoneKind::Crucible,
             OmicronZoneType::CruciblePantry { .. } => ZoneKind::CruciblePantry,
@@ -260,6 +275,7 @@ impl OmicronZoneType {
 
             OmicronZoneType::Clickhouse { .. }
             | OmicronZoneType::ClickhouseKeeper { .. }
+            | OmicronZoneType::ClickhouseServer { .. }
             | OmicronZoneType::CockroachDb { .. }
             | OmicronZoneType::Crucible { .. }
             | OmicronZoneType::CruciblePantry { .. }
@@ -279,6 +295,7 @@ impl OmicronZoneType {
             | OmicronZoneType::InternalNtp { .. }
             | OmicronZoneType::Clickhouse { .. }
             | OmicronZoneType::ClickhouseKeeper { .. }
+            | OmicronZoneType::ClickhouseServer { .. }
             | OmicronZoneType::CockroachDb { .. }
             | OmicronZoneType::Crucible { .. }
             | OmicronZoneType::CruciblePantry { .. }
@@ -297,6 +314,7 @@ impl OmicronZoneType {
             | OmicronZoneType::InternalNtp { .. }
             | OmicronZoneType::Clickhouse { .. }
             | OmicronZoneType::ClickhouseKeeper { .. }
+            | OmicronZoneType::ClickhouseServer { .. }
             | OmicronZoneType::CockroachDb { .. }
             | OmicronZoneType::CruciblePantry { .. }
             | OmicronZoneType::ExternalDns { .. }
@@ -318,6 +336,7 @@ impl OmicronZoneType {
             OmicronZoneType::InternalNtp { .. }
             | OmicronZoneType::Clickhouse { .. }
             | OmicronZoneType::ClickhouseKeeper { .. }
+            | OmicronZoneType::ClickhouseServer { .. }
             | OmicronZoneType::CockroachDb { .. }
             | OmicronZoneType::Crucible { .. }
             | OmicronZoneType::CruciblePantry { .. }
@@ -336,6 +355,7 @@ impl OmicronZoneType {
             OmicronZoneType::InternalNtp { .. }
             | OmicronZoneType::Clickhouse { .. }
             | OmicronZoneType::ClickhouseKeeper { .. }
+            | OmicronZoneType::ClickhouseServer { .. }
             | OmicronZoneType::CockroachDb { .. }
             | OmicronZoneType::Crucible { .. }
             | OmicronZoneType::CruciblePantry { .. }
@@ -370,11 +390,14 @@ impl OmicronZoneType {
 /// the four representations if at all possible. If you must add a new one,
 /// please add it here rather than doing something ad-hoc in the calling code
 /// so it's more legible.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter,
+)]
 pub enum ZoneKind {
     BoundaryNtp,
     Clickhouse,
     ClickhouseKeeper,
+    ClickhouseServer,
     CockroachDb,
     Crucible,
     CruciblePantry,
@@ -398,6 +421,7 @@ impl ZoneKind {
             ZoneKind::BoundaryNtp | ZoneKind::InternalNtp => Self::NTP_PREFIX,
             ZoneKind::Clickhouse => "clickhouse",
             ZoneKind::ClickhouseKeeper => "clickhouse_keeper",
+            ZoneKind::ClickhouseServer => "clickhouse_server",
             // Note "cockroachdb" for historical reasons.
             ZoneKind::CockroachDb => "cockroachdb",
             ZoneKind::Crucible => "crucible",
@@ -417,6 +441,7 @@ impl ZoneKind {
             ZoneKind::BoundaryNtp | ZoneKind::InternalNtp => Self::NTP_PREFIX,
             ZoneKind::Clickhouse => "clickhouse",
             ZoneKind::ClickhouseKeeper => "clickhouse_keeper",
+            ZoneKind::ClickhouseServer => "clickhouse_server",
             // Note "cockroachdb" for historical reasons.
             ZoneKind::CockroachDb => "cockroachdb",
             ZoneKind::Crucible => "crucible",
@@ -439,6 +464,7 @@ impl ZoneKind {
             ZoneKind::BoundaryNtp | ZoneKind::InternalNtp => Self::NTP_PREFIX,
             ZoneKind::Clickhouse => "clickhouse",
             ZoneKind::ClickhouseKeeper => "clickhouse-keeper",
+            ZoneKind::ClickhouseServer => "clickhouse-server",
             // Note "cockroach" for historical reasons.
             ZoneKind::CockroachDb => "cockroach",
             ZoneKind::Crucible => "crucible",
@@ -459,6 +485,7 @@ impl ZoneKind {
             ZoneKind::BoundaryNtp => "boundary_ntp",
             ZoneKind::Clickhouse => "clickhouse",
             ZoneKind::ClickhouseKeeper => "clickhouse_keeper",
+            ZoneKind::ClickhouseServer => "clickhouse_server",
             ZoneKind::CockroachDb => "cockroach_db",
             ZoneKind::Crucible => "crucible",
             ZoneKind::CruciblePantry => "crucible_pantry",
@@ -467,6 +494,27 @@ impl ZoneKind {
             ZoneKind::InternalNtp => "internal_ntp",
             ZoneKind::Nexus => "nexus",
             ZoneKind::Oximeter => "oximeter",
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use omicron_common::api::external::Name;
+    use strum::IntoEnumIterator;
+
+    use super::*;
+
+    #[test]
+    fn test_name_prefixes() {
+        for zone_kind in ZoneKind::iter() {
+            let name_prefix = zone_kind.name_prefix();
+            name_prefix.parse::<Name>().unwrap_or_else(|e| {
+                panic!(
+                    "failed to parse name prefix {:?} for zone kind {:?}: {}",
+                    name_prefix, zone_kind, e
+                );
+            });
         }
     }
 }
