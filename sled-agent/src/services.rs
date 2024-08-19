@@ -66,8 +66,8 @@ use nexus_sled_agent_shared::inventory::{
     OmicronZoneConfig, OmicronZoneType, OmicronZonesConfig, ZoneKind,
 };
 use omicron_common::address::CLICKHOUSE_ADMIN_PORT;
+use omicron_common::address::CLICKHOUSE_HTTP_PORT;
 use omicron_common::address::CLICKHOUSE_KEEPER_PORT;
-use omicron_common::address::CLICKHOUSE_PORT;
 use omicron_common::address::COCKROACH_PORT;
 use omicron_common::address::CRUCIBLE_PANTRY_PORT;
 use omicron_common::address::CRUCIBLE_PORT;
@@ -1550,7 +1550,7 @@ impl ServiceManager {
                 };
 
                 let listen_addr = *underlay_address;
-                let listen_port = &CLICKHOUSE_PORT.to_string();
+                let listen_port = &CLICKHOUSE_HTTP_PORT.to_string();
 
                 let nw_setup_service = Self::zone_network_setup_install(
                     Some(&info.underlay_address),
@@ -1574,9 +1574,11 @@ impl ServiceManager {
                             .add_property_group(config),
                     );
 
-                let ch_address =
-                    SocketAddr::new(IpAddr::V6(listen_addr), CLICKHOUSE_PORT)
-                        .to_string();
+                let ch_address = SocketAddr::new(
+                    IpAddr::V6(listen_addr),
+                    CLICKHOUSE_HTTP_PORT,
+                )
+                .to_string();
 
                 let admin_address = SocketAddr::new(
                     IpAddr::V6(listen_addr),
@@ -1735,9 +1737,11 @@ impl ServiceManager {
                                 .add_property_group(config),
                         );
 
-                let ch_address =
-                    SocketAddr::new(IpAddr::V6(listen_addr), CLICKHOUSE_PORT)
-                        .to_string();
+                let ch_address = SocketAddr::new(
+                    IpAddr::V6(listen_addr),
+                    CLICKHOUSE_HTTP_PORT,
+                )
+                .to_string();
 
                 let admin_address = SocketAddr::new(
                     IpAddr::V6(listen_addr),

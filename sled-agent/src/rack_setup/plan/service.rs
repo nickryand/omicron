@@ -706,7 +706,7 @@ impl Plan {
             };
             let id = OmicronZoneUuid::new_v4();
             let ip = sled.addr_alloc.next().expect("Not enough addrs");
-            let port = omicron_common::address::CLICKHOUSE_PORT;
+            let port = omicron_common::address::CLICKHOUSE_HTTP_PORT;
             let address = SocketAddrV6::new(ip, port, 0, 0);
             dns_builder
                 .host_zone_with_one_backend(

@@ -1128,12 +1128,12 @@ dependencies = [
 [[package]]
 name = "clickward"
 version = "0.1.0"
-source = "git+https://github.com/oxidecomputer/clickward?rev=4ee0f74db55f440d589232256458c0750f6a641e#4ee0f74db55f440d589232256458c0750f6a641e"
 dependencies = [
  "anyhow",
  "camino",
  "clap",
  "derive_more",
+ "schemars",
  "serde",
  "serde_json",
  "thiserror",
@@ -5446,8 +5446,10 @@ dependencies = [
  "api_identity",
  "async-trait",
  "base64 0.22.1",
+ "camino",
  "chrono",
  "clap",
+ "clickward",
  "cookie 0.18.1",
  "derive-where",
  "derive_more",

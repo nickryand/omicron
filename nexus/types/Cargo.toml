@@ -10,8 +10,10 @@ workspace = true
 [dependencies]
 anyhow.workspace = true
 async-trait.workspace = true
+camino.workspace = true
 chrono.workspace = true
 clap.workspace = true
+clickward.workspace = true
 cookie.workspace = true
 base64.workspace = true
 derive-where.workspace = true
