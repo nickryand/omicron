@@ -723,7 +723,7 @@ dependencies = [
  "omicron-workspace-hack",
  "oxnet",
  "progenitor",
- "regress",
+ "regress 0.10.0",
  "reqwest",
  "schemars",
  "serde",
@@ -2199,7 +2199,7 @@ dependencies = [
  "progenitor-client",
  "quote",
  "rand",
- "regress",
+ "regress 0.10.0",
  "reqwest",
  "rustfmt-wrapper",
  "schemars",
@@ -3616,7 +3616,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.7",
  "tokio",
  "tower-service",
  "tracing",
@@ -3836,7 +3836,7 @@ dependencies = [
  "oxide-vpc",
  "oxlog",
  "oxnet",
- "regress",
+ "regress 0.10.0",
  "schemars",
  "serde",
  "serde_json",
@@ -4001,7 +4001,7 @@ dependencies = [
  "omicron-common",
  "omicron-workspace-hack",
  "progenitor",
- "regress",
+ "regress 0.10.0",
  "reqwest",
  "schemars",
  "serde",
@@ -4953,7 +4953,7 @@ dependencies = [
  "omicron-workspace-hack",
  "oxnet",
  "progenitor",
- "regress",
+ "regress 0.10.0",
  "reqwest",
  "schemars",
  "serde",
@@ -5873,7 +5873,7 @@ dependencies = [
  "progenitor-client",
  "proptest",
  "rand",
- "regress",
+ "regress 0.10.0",
  "reqwest",
  "schemars",
  "semver 1.0.23",
@@ -6529,7 +6529,6 @@ dependencies = [
  "similar",
  "slog",
  "smallvec 1.13.2",
- "socket2 0.5.7",
  "spin 0.9.8",
  "string_cache",
  "subtle",
@@ -6807,7 +6806,7 @@ dependencies = [
  "omicron-workspace-hack",
  "progenitor",
  "rand",
- "regress",
+ "regress 0.10.0",
  "reqwest",
  "serde",
  "serde_json",
@@ -8428,6 +8427,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "regress"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16fe0a24af5daaae947294213d2fd2646fbf5e1fbacc1d4ba3e84b2393854842"
+dependencies = [
+ "hashbrown 0.14.5",
+ "memchr",
+]
+
+[[package]]
 name = "relative-path"
 version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9547,7 +9556,7 @@ dependencies = [
  "omicron-workspace-hack",
  "oxnet",
  "progenitor",
- "regress",
+ "regress 0.10.0",
  "reqwest",
  "schemars",
  "serde",
@@ -11140,7 +11149,7 @@ dependencies = [
  "log",
  "proc-macro2",
  "quote",
- "regress",
+ "regress 0.9.1",
  "schemars",
  "semver 1.0.23",
  "serde",
@@ -11901,7 +11910,7 @@ dependencies = [
  "omicron-uuid-kinds",
  "omicron-workspace-hack",
  "progenitor",
- "regress",
+ "regress 0.10.0",
  "reqwest",
  "schemars",
  "serde",
