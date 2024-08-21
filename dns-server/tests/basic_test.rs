@@ -97,7 +97,7 @@ pub async fn aaaa_crud() -> Result<(), anyhow::Error> {
 
 #[tokio::test]
 pub async fn answers_match_question() -> Result<(), anyhow::Error> {
-    let test_ctx = init_client_server("not_wrong_record_answers").await?;
+    let test_ctx = init_client_server("answers_match_question").await?;
     let client = &test_ctx.client;
 
     // records should initially be empty
