@@ -89,7 +89,8 @@ quote = { version = "1.0.36" }
 regex = { version = "1.10.6" }
 regex-automata = { version = "0.4.6", default-features = false, features = ["dfa", "hybrid", "meta", "nfa", "perf", "unicode"] }
 regex-syntax = { version = "0.8.4" }
-reqwest = { version = "0.11.27", features = ["blocking", "cookies", "json", "rustls-tls", "stream"] }
+reqwest-5ef9efb8ec2df382 = { package = "reqwest", version = "0.12.7", default-features = false, features = ["cookies", "json", "rustls-tls", "stream"] }
+reqwest-a6292c17cd707f01 = { package = "reqwest", version = "0.11.27", features = ["blocking", "json", "rustls-tls", "stream"] }
 ring = { version = "0.17.8", features = ["std"] }
 rsa = { version = "0.9.6", features = ["serde", "sha2"] }
 schemars = { version = "0.8.21", features = ["bytes", "chrono", "uuid1"] }
@@ -102,7 +103,6 @@ sha2 = { version = "0.10.8", features = ["oid"] }
 similar = { version = "2.6.0", features = ["bytes", "inline", "unicode"] }
 slog = { version = "2.7.0", features = ["dynamic-keys", "max_level_trace", "release_max_level_debug", "release_max_level_trace"] }
 smallvec = { version = "1.13.2", default-features = false, features = ["const_new"] }
-socket2 = { version = "0.5.7", default-features = false, features = ["all"] }
 spin = { version = "0.9.8" }
 string_cache = { version = "0.8.7" }
 subtle = { version = "2.5.0" }
@@ -198,7 +198,8 @@ quote = { version = "1.0.36" }
 regex = { version = "1.10.6" }
 regex-automata = { version = "0.4.6", default-features = false, features = ["dfa", "hybrid", "meta", "nfa", "perf", "unicode"] }
 regex-syntax = { version = "0.8.4" }
-reqwest = { version = "0.11.27", features = ["blocking", "cookies", "json", "rustls-tls", "stream"] }
+reqwest-5ef9efb8ec2df382 = { package = "reqwest", version = "0.12.7", default-features = false, features = ["cookies", "json", "rustls-tls", "stream"] }
+reqwest-a6292c17cd707f01 = { package = "reqwest", version = "0.11.27", features = ["blocking", "json", "rustls-tls", "stream"] }
 ring = { version = "0.17.8", features = ["std"] }
 rsa = { version = "0.9.6", features = ["serde", "sha2"] }
 schemars = { version = "0.8.21", features = ["bytes", "chrono", "uuid1"] }
@@ -211,7 +212,6 @@ sha2 = { version = "0.10.8", features = ["oid"] }
 similar = { version = "2.6.0", features = ["bytes", "inline", "unicode"] }
 slog = { version = "2.7.0", features = ["dynamic-keys", "max_level_trace", "release_max_level_debug", "release_max_level_trace"] }
 smallvec = { version = "1.13.2", default-features = false, features = ["const_new"] }
-socket2 = { version = "0.5.7", default-features = false, features = ["all"] }
 spin = { version = "0.9.8" }
 string_cache = { version = "0.8.7" }
 subtle = { version = "2.5.0" }
@@ -237,6 +237,7 @@ zerocopy = { version = "0.7.34", features = ["derive", "simd"] }
 zeroize = { version = "1.7.0", features = ["std", "zeroize_derive"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
+cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 dof = { version = "0.3.0", default-features = false, features = ["des"] }
 linux-raw-sys = { version = "0.4.13", default-features = false, features = ["elf", "errno", "general", "ioctl", "no_std", "std", "system"] }
 mio = { version = "0.8.11", features = ["net", "os-ext"] }
@@ -246,6 +247,7 @@ rustix = { version = "0.38.34", features = ["fs", "stdio", "system", "termios"] 
 signal-hook-mio = { version = "0.2.4", default-features = false, features = ["support-v0_8", "support-v1_0"] }
 
 [target.x86_64-unknown-linux-gnu.build-dependencies]
+cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 dof = { version = "0.3.0", default-features = false, features = ["des"] }
 linux-raw-sys = { version = "0.4.13", default-features = false, features = ["elf", "errno", "general", "ioctl", "no_std", "std", "system"] }
 mio = { version = "0.8.11", features = ["net", "os-ext"] }
@@ -255,6 +257,7 @@ rustix = { version = "0.38.34", features = ["fs", "stdio", "system", "termios"] 
 signal-hook-mio = { version = "0.2.4", default-features = false, features = ["support-v0_8", "support-v1_0"] }
 
 [target.x86_64-apple-darwin.dependencies]
+cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 mio = { version = "0.8.11", features = ["net", "os-ext"] }
 nix = { version = "0.28.0", features = ["feature", "fs", "ioctl", "poll", "signal", "term", "uio"] }
 once_cell = { version = "1.19.0" }
@@ -262,6 +265,7 @@ rustix = { version = "0.38.34", features = ["fs", "stdio", "system", "termios"] 
 signal-hook-mio = { version = "0.2.4", default-features = false, features = ["support-v0_8", "support-v1_0"] }
 
 [target.x86_64-apple-darwin.build-dependencies]
+cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 mio = { version = "0.8.11", features = ["net", "os-ext"] }
 nix = { version = "0.28.0", features = ["feature", "fs", "ioctl", "poll", "signal", "term", "uio"] }
 once_cell = { version = "1.19.0" }
@@ -269,6 +273,7 @@ rustix = { version = "0.38.34", features = ["fs", "stdio", "system", "termios"] 
 signal-hook-mio = { version = "0.2.4", default-features = false, features = ["support-v0_8", "support-v1_0"] }
 
 [target.aarch64-apple-darwin.dependencies]
+cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 mio = { version = "0.8.11", features = ["net", "os-ext"] }
 nix = { version = "0.28.0", features = ["feature", "fs", "ioctl", "poll", "signal", "term", "uio"] }
 once_cell = { version = "1.19.0" }
@@ -276,6 +281,7 @@ rustix = { version = "0.38.34", features = ["fs", "stdio", "system", "termios"] 
 signal-hook-mio = { version = "0.2.4", default-features = false, features = ["support-v0_8", "support-v1_0"] }
 
 [target.aarch64-apple-darwin.build-dependencies]
+cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 mio = { version = "0.8.11", features = ["net", "os-ext"] }
 nix = { version = "0.28.0", features = ["feature", "fs", "ioctl", "poll", "signal", "term", "uio"] }
 once_cell = { version = "1.19.0" }
@@ -283,6 +289,7 @@ rustix = { version = "0.38.34", features = ["fs", "stdio", "system", "termios"] 
 signal-hook-mio = { version = "0.2.4", default-features = false, features = ["support-v0_8", "support-v1_0"] }
 
 [target.x86_64-unknown-illumos.dependencies]
+cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 dof = { version = "0.3.0", default-features = false, features = ["des"] }
 mio = { version = "0.8.11", features = ["net", "os-ext"] }
 nix = { version = "0.28.0", features = ["feature", "fs", "ioctl", "poll", "signal", "term", "uio"] }
@@ -292,6 +299,7 @@ signal-hook-mio = { version = "0.2.4", default-features = false, features = ["su
 toml_edit-cdcf2f9584511fe6 = { package = "toml_edit", version = "0.19.15", features = ["serde"] }
 
 [target.x86_64-unknown-illumos.build-dependencies]
+cookie = { version = "0.18.1", default-features = false, features = ["percent-encode"] }
 dof = { version = "0.3.0", default-features = false, features = ["des"] }
 mio = { version = "0.8.11", features = ["net", "os-ext"] }
 nix = { version = "0.28.0", features = ["feature", "fs", "ioctl", "poll", "signal", "term", "uio"] }
