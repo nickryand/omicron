@@ -3616,7 +3616,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.7",
  "tokio",
  "tower-service",
  "tracing",
@@ -6518,6 +6518,7 @@ dependencies = [
  "ring 0.17.8",
  "rsa",
  "rustix",
+ "rustls-pki-types",
  "schemars",
  "scopeguard",
  "semver 1.0.23",
@@ -6529,7 +6530,6 @@ dependencies = [
  "similar",
  "slog",
  "smallvec 1.13.2",
- "socket2 0.5.7",
  "spin 0.9.8",
  "string_cache",
  "subtle",
@@ -8246,12 +8246,13 @@ dependencies = [
 
 [[package]]
 name = "rcgen"
-version = "0.12.1"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48406db8ac1f3cbc7dcdb56ec355343817958a356ff430259bb07baf7607e1e1"
+checksum = "54077e1872c46788540de1ea3d7f4ccb1983d12f9aa909b234468676c1a36779"
 dependencies = [
  "pem",
  "ring 0.17.8",
+ "rustls-pki-types",
  "time",
  "yasna",
 ]
