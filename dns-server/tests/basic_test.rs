@@ -9,6 +9,22 @@ use dns_service_client::{
     Client,
 };
 use dropshot::{test_util::LogContext, HandlerTaskMode};
+use hickory_client::{
+    client::{AsyncClient, ClientHandle},
+    error::ClientError,
+    udp::UdpClientStream,
+};
+
+use hickory_proto::{
+    op::ResponseCode,
+    rr::{DNSClass, Name, RecordType},
+    xfer::DnsResponse,
+};
+use hickory_resolver::error::ResolveErrorKind;
+use hickory_resolver::TokioAsyncResolver;
+use hickory_resolver::{
+    config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
+};
 use omicron_test_utils::dev::test_setup_log;
 use slog::o;
 use std::{
@@ -16,22 +32,6 @@ use std::{
     net::Ipv6Addr,
     net::{IpAddr, Ipv4Addr},
 };
-use trust_dns_client::{
-    client::{AsyncClient, ClientHandle},
-    error::ClientError,
-    udp::UdpClientStream,
-};
-
-use trust_dns_proto::{
-    op::ResponseCode,
-    rr::{DNSClass, Name, RecordType},
-    xfer::DnsResponse,
-};
-use trust_dns_resolver::config::{
-    NameServerConfig, Protocol, ResolverConfig, ResolverOpts,
-};
-use trust_dns_resolver::error::ResolveErrorKind;
-use trust_dns_resolver::TokioAsyncResolver;
 
 const TEST_ZONE: &'static str = "oxide.internal";
 
@@ -204,7 +204,7 @@ pub async fn srv_crud() -> Result<(), anyhow::Error> {
     // that the additional records really do come back in the "Additionals"
     // section of the response.
 
-    let name = trust_dns_client::rr::domain::Name::from_ascii(&test_fqdn)
+    let name = Name::from_ascii(&test_fqdn)
         .expect("can construct name for query");
 
     let response = raw_dns_client_query(
@@ -463,17 +463,19 @@ async fn init_client_server(
     )
     .await?;
 
-    let mut rc = ResolverConfig::new();
-    rc.add_name_server(NameServerConfig {
+    let mut resolver_config = ResolverConfig::new();
+    resolver_config.add_name_server(NameServerConfig {
         socket_addr: dns_server.local_address(),
         protocol: Protocol::Udp,
         tls_dns_name: None,
-        trust_nx_responses: false,
+        trust_negative_responses: false,
         bind_addr: None,
     });
+    let mut resolver_opts = ResolverOpts::default();
+    // Enable edns for potentially larger records
+    resolver_opts.edns0 = true;
 
-    let resolver =
-        TokioAsyncResolver::tokio(rc, ResolverOpts::default()).unwrap();
+    let resolver = TokioAsyncResolver::tokio(resolver_config, resolver_opts);
     let client =
         Client::new(&format!("http://{}", dropshot_server.local_addr()), log);
 
