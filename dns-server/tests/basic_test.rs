@@ -17,9 +17,9 @@ use std::{
     net::{IpAddr, Ipv4Addr},
 };
 use trust_dns_client::{
-    client::{Client as TrustDnsClient, SyncClient},
+    client::{AsyncClient, ClientHandle},
     error::ClientError,
-    udp::UdpClientConnection,
+    udp::UdpClientStream,
 };
 
 use trust_dns_proto::{
@@ -133,6 +133,12 @@ pub async fn answers_match_question() -> Result<(), anyhow::Error> {
     )
     .await
     .expect("test query is ok");
+
+    // The answer we expect is:
+    // * no error: the domain exists, so NXDOMAIN would be wrong
+    // * no answers: we ask specifically for a record type the server does not have
+    // * no additionals: the server could return AAAA records as additionals to an
+    //   A query, but does not currently.
     assert_eq!(response.header().response_code(), ResponseCode::NoError);
     assert_eq!(response.answers(), &[]);
     assert_eq!(response.additionals(), &[]);
@@ -563,35 +569,23 @@ async fn dns_records_list(
         .unwrap_or_else(HashMap::new))
 }
 
-/// issue a DNS query of `record_ty` records for `name`.
+/// Issue a DNS query of `record_ty` records for `name`.
 ///
-/// in most tests we just use `trust-dns-resolver` for a higher-level interface
-/// to making DNS queries and handling responses. this is also the crate used
-/// elsewhere to handle DNS responses in Omicron. however, it is slightly
+/// In most tests we just use `trust-dns-resolver` for a higher-level interface
+/// to making DNS queries and handling responses. This is also the crate used
+/// elsewhere to handle DNS responses in Omicron. However, it is slightly
 /// higher-level than the actual wire response we produce from the DNS server in
 /// this same crate; to assert on responses we send on the wire, this issues a
 /// query using `trust-dns-client` and returns the corresponding `DnsResponse`.
-// FIXME(ixi): while `trust-dns-client` has an `AsyncClient` which theoretically
-// integrates nicely with tokio use in this test, I can't figure out how to
-// instantiate it! `SyncClient` is just as good but makes for a slightly messier
-// test.
 async fn raw_dns_client_query(
     resolver_addr: std::net::SocketAddr,
     name: Name,
     record_ty: RecordType,
 ) -> Result<DnsResponse, ClientError> {
-    let dns_client_conn = UdpClientConnection::new(resolver_addr)
-        .expect("can prepare UdpClientConnection");
-    let trust_client = SyncClient::new(dns_client_conn);
+    let stream = UdpClientStream::<tokio::net::UdpSocket>::new(resolver_addr);
+    let (mut trust_client, bg) = AsyncClient::connect(stream).await.unwrap();
 
-    tokio::task::spawn_blocking(move || {
-        // query for an A record. the answer we expect is:
-        // * no error: the domain exists, so NXDOMAIN would be wrong
-        // * no answers: we ask specifically for a record type the server does not have
-        // * no additionals: the server could return AAAA records as additionals
-        //   to an A query, but does not currently.
-        trust_client.query(&name, DNSClass::IN, record_ty)
-    })
-    .await
-    .expect("query and test is ok")
+    tokio::spawn(bg);
+
+    trust_client.query(name, DNSClass::IN, record_ty).await
 }
