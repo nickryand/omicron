@@ -118,14 +118,14 @@ pub async fn answers_match_question() -> Result<(), anyhow::Error> {
     let name = Name::from_ascii(&(name + "." + TEST_ZONE + "."))
         .expect("can construct name for query");
 
-    // it turns out `trust-dns-resolver`'s internal CachingClient will
-    // transparently correct the server misbehavior "server sent AAAA answers to
-    // an A query": the caching client will cache the extra record, then
-    // determine that there are no A records to respond with, and send a
-    // matching response.
+    // If a server returns answers incorrectly, such as sending AAAA answers to
+    // an A query, it turns out `trust-dns-resolver`'s internal CachingClient
+    // transparently corrects the misbehavior. The caching client will cache the
+    // extra record, then see there are no A records matching the query, and
+    // finally send a correct response with no answers.
     //
-    // so, instead, `raw_dns_client_query` will let us see an actual server
-    // misbehavior, if one occurs.
+    // `raw_dns_client_query` avoids using a hickory Resolver, so we can assert
+    // on the exact answer from our server.
     let response = raw_dns_client_query(
         test_ctx.dns_server.local_address(),
         name,
@@ -137,8 +137,8 @@ pub async fn answers_match_question() -> Result<(), anyhow::Error> {
     // The answer we expect is:
     // * no error: the domain exists, so NXDOMAIN would be wrong
     // * no answers: we ask specifically for a record type the server does not have
-    // * no additionals: the server could return AAAA records as additionals to an
-    //   A query, but does not currently.
+    // * no additionals: the server could return AAAA records as additionals to
+    //   an A query, but does not currently.
     assert_eq!(response.header().response_code(), ResponseCode::NoError);
     assert_eq!(response.answers(), &[]);
     assert_eq!(response.additionals(), &[]);
