@@ -20,11 +20,11 @@ use hickory_proto::{
     rr::{DNSClass, Name, RecordType},
     xfer::DnsResponse,
 };
+use hickory_resolver::config::{
+    NameServerConfig, Protocol, ResolverConfig, ResolverOpts,
+};
 use hickory_resolver::error::ResolveErrorKind;
 use hickory_resolver::TokioAsyncResolver;
-use hickory_resolver::{
-    config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
-};
 use omicron_test_utils::dev::test_setup_log;
 use slog::o;
 use std::{
@@ -204,8 +204,8 @@ pub async fn srv_crud() -> Result<(), anyhow::Error> {
     // that the additional records really do come back in the "Additionals"
     // section of the response.
 
-    let name = Name::from_ascii(&test_fqdn)
-        .expect("can construct name for query");
+    let name =
+        Name::from_ascii(&test_fqdn).expect("can construct name for query");
 
     let response = raw_dns_client_query(
         test_ctx.dns_server.local_address(),
