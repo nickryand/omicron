@@ -74,7 +74,7 @@ output.type = "tarball"
 [package.overlay]
 service_name = "overlay"
 source.type = "composite"
-source.packages = ["logadm.tar.gz", "profile.tar.gz"]
+source.packages = ["logadm.tar.gz", "profile.tar.gz", "ipmgmt.tar.gz"]
 output.type = "zone"
 
 # The logadm package is an overlay for all non-global zones to reconfigure log
@@ -97,6 +97,15 @@ source.type = "local"
 source.paths = [
   { from = "smf/profile/profile", to = "/root/.profile" },
   { from = "smf/profile/bashrc", to = "/root/.bashrc" },
+]
+output.type = "zone"
+output.intermediate_only = true
+
+[package.ipmgmt]
+service_name = "ipmgmt"
+source.type = "local"
+source.paths = [
+  { from = "smf/ipmgmt/network-ipmgmt.xml", to = "/lib/svc/manifest/network/network-ipmgmt.xml" },
 ]
 output.type = "zone"
 output.intermediate_only = true

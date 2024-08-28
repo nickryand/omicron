@@ -3199,6 +3199,7 @@ impl ServiceManager {
                 );
             }
         }
+
         Ok(running_zone)
     }
 
@@ -3256,6 +3257,12 @@ impl ServiceManager {
                 &[],
                 fake_install_dir,
             )
+            .await?;
+
+        /// The zone-network-setup service is racy and can fall into maintenance.
+        /// Ensure that it gets cleared.
+        runtime
+            .ensure_online_service("svc:/oxide/zone-network-setup:default")
             .await?;
 
         Ok(OmicronZone { runtime, config })
@@ -4626,6 +4633,7 @@ impl ServiceManager {
             .await?;
         *sled_zone =
             SwitchZoneState::Running { request: request.clone(), zone };
+
         Ok(())
     }
 

@@ -16,7 +16,7 @@ sidecar_revision.soft_zone = { front_port_count = 1, rear_port_count = 1 }
 
 # Setting this to true causes sled-agent to always report that its time is
 # in-sync, rather than querying its NTP zone.
-skip_timesync = false
+skip_timesync = true
 
 # For testing purposes, a file-backed virtual disk can be manually created with
 # the following:
@@ -29,18 +29,17 @@ skip_timesync = false
 # These paths have the prefix of either "u2" or "m2", followed by an underscore,
 # followed by a string that is embedded into their fake serial values.
 vdevs = [
-  "m2_0.vdev",
-  "m2_1.vdev",
-
-  "u2_0.vdev",
-  "u2_1.vdev",
-  "u2_2.vdev",
-  "u2_3.vdev",
-  "u2_4.vdev",
-  "u2_5.vdev",
-  "u2_6.vdev",
-  "u2_7.vdev",
-  "u2_8.vdev",
+  "/oxide/disks/m2_0.vdev",
+  "/oxide/disks/m2_1.vdev",
+  "/oxide/disks/u2_0.vdev",
+  "/oxide/disks/u2_1.vdev",
+  "/oxide/disks/u2_2.vdev",
+  "/oxide/disks/u2_3.vdev",
+  "/oxide/disks/u2_4.vdev",
+  "/oxide/disks/u2_5.vdev",
+  "/oxide/disks/u2_6.vdev",
+  "/oxide/disks/u2_7.vdev",
+  "/oxide/disks/u2_8.vdev",
 ]
 
 # Percentage of usable physical DRAM to use for the VMM reservoir, which
@@ -84,7 +83,7 @@ data_links = ["net0", "net1"]
 request_body_max_bytes = 2_147_483_648
 
 [log]
-level = "info"
+level = "debug"
 mode = "file"
 path = "/dev/stdout"
 if_exists = "append"

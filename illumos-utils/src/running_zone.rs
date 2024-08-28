@@ -496,7 +496,7 @@ impl RunningZone {
         // services are up, so future requests to create network addresses
         // or manipulate services will work.
         let fmri = "svc:/milestone/single-user:default";
-        wait_for_service(Some(&zone.name), fmri, zone.log.clone())
+        wait_for_service(Some(&zone.name), fmri, zone.log.clone(), true)
             .await
             .map_err(|_| BootError::Timeout {
                 service: fmri.to_string(),
@@ -510,6 +510,28 @@ impl RunningZone {
         let running_zone = RunningZone { id: Some(id), inner: zone };
 
         Ok(running_zone)
+    }
+
+    /// When booting a zone is slow, some services can fail to start such as zone-network-setup.
+    /// There can be a race condition between smf configuration properties being set and
+    /// the startup of a service that uses those settings. This method allows us to setup a
+    /// watchdog that can wait for any service and clear it if needed.
+    pub async fn ensure_online_service(
+        &self,
+        fmri: &str,
+    ) -> Result<(), BootError> {
+        wait_for_service(
+            Some(&self.inner.name),
+            fmri,
+            self.inner.log.clone(),
+            true,
+        )
+        .await
+        .map_err(|_| BootError::Timeout {
+            service: fmri.to_string(),
+            zone: self.inner.name.to_string(),
+        })?;
+        Ok(())
     }
 
     pub async fn ensure_address(
