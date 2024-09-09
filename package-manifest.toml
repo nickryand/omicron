@@ -97,7 +97,7 @@ output.intermediate_only = true
 [package.ipmgmt]
 service_name = "ipmgmt"
 source.type = "local"
-source.pahts = [
+source.paths = [
   { from = "smf/ipmgmt/network-ipmgmt.xml", to = "/lib/svc/manifest/network/network-ipmgmt.xml" },
 ]
 output.type = "zone"
