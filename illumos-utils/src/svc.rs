@@ -61,7 +61,7 @@ mod inner {
                         // This is helpful in virtual environments where
                         // services take a few tries to come up. To enable,
                         // compile with RUSTFLAGS="--cfg svcadm_autoclear"
-                        //#[cfg(svcadm_autoclear)]
+                        #[cfg(svcadm_autoclear)]
                         if let Some(zname) = zone {
                             if let Err(out) =
                                 tokio::process::Command::new(crate::PFEXEC)
