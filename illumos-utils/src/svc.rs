@@ -12,7 +12,7 @@ use omicron_common::backoff;
 #[cfg_attr(any(test, feature = "testing"), mockall::automock, allow(dead_code))]
 mod inner {
     use super::*;
-    use slog::{warn, Logger};
+    use slog::{debug, warn, Logger};
 
     // TODO(https://www.illumos.org/issues/13837): This is a hack;
     // remove me when when fixed. Ideally, the ".synchronous()" argument
@@ -53,6 +53,7 @@ mod inner {
                     }
                 };
                 if let Ok(value) = properties.lookup().run(&name, &fmri) {
+                    debug!(log, "wait_for_service {:?}, current value {:?}", name, value.value());
                     if value.value()
                         == &smf::PropertyValue::Astring("online".to_string())
                     {
