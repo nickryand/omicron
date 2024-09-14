@@ -44,6 +44,7 @@ mod inner {
         backoff::retry_notify(
             backoff::retry_policy_local(),
             || async {
+                debug!(log, "setting up waiter for {fmri});
                 let mut p = smf::Properties::new();
                 let properties = {
                     if let Some(zone) = zone {
