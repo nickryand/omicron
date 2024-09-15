@@ -33,6 +33,7 @@ use crate::config::SidecarRevision;
 use crate::metrics::MetricsRequestQueue;
 use crate::params::{DendriteAsic, OmicronZoneConfigExt, OmicronZoneTypeExt};
 use crate::profile::*;
+use crate::svc::wait_for_service;
 use crate::zone_bundle::BundleError;
 use crate::zone_bundle::ZoneBundler;
 use anyhow::anyhow;
@@ -3112,6 +3113,17 @@ impl ServiceManager {
                 RunningZone::boot(installed_zone).await?
             }
         };
+
+        // zone-setup-network is also racy on a sled that is slow to start such as a
+        // non-gimlet lab setup.
+        let fmri = "svc:/oxide/zone-network-setup:default";
+        let zone_name = running_zone.name();
+        wait_for_service(Some(zone_name), fmri, log.clone()).await.map_err(
+            |_| BootError::Timeout {
+                service: fmri.to_string(),
+                zone: zone_name.to_string(),
+            },
+        )?;
 
         // Now that we've booted the zone, we'll notify the sled-agent about:
         //
