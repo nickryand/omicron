@@ -503,15 +503,15 @@ impl RunningZone {
                 zone: zone.name.to_string(),
             })?;
 
-        // zone-setup-network is also racy on a sled that is slow to start such as a
-        // non-gimlet lab setup.
-        let fmri = "svc:/oxide/zone-network-setup:default";
-        wait_for_service(Some(&zone.name), fmri, zone.log.clone())
-            .await
-            .map_err(|_| BootError::Timeout {
-                service: fmri.to_string(),
-                zone: zone.name.to_string(),
-            })?;
+        // // zone-setup-network is also racy on a sled that is slow to start such as a
+        // // non-gimlet lab setup.
+        // let fmri = "svc:/oxide/zone-network-setup:default";
+        // wait_for_service(Some(&zone.name), fmri, zone.log.clone())
+        //     .await
+        //     .map_err(|_| BootError::Timeout {
+        //         service: fmri.to_string(),
+        //         zone: zone.name.to_string(),
+        //     })?;
 
         let id = Zones::id(&zone.name)
             .await?
