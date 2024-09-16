@@ -3136,6 +3136,12 @@ impl ServiceManager {
                 );
             }
         }
+
+        /// The zone-network-setup service is racy and can fall into maintenance.
+        /// Ensure that it gets cleared.
+        running_zone
+            .ensure_online_service("svc:/oxide/zone-network-setup:default")?;
+
         Ok(running_zone)
     }
 

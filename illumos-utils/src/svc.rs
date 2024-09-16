@@ -29,6 +29,7 @@ mod inner {
         zone: Option<&'a str>,
         fmri: &'b str,
         log: Logger,
+        clear_maintenance: bool,
     ) -> Result<(), Error> {
         let name = smf::PropertyName::new("restarter", "state").unwrap();
 
@@ -59,11 +60,7 @@ mod inner {
                         == &smf::PropertyValue::Astring("online".to_string())
                     {
                         return Ok(());
-                    } else {
-                        // This is helpful in virtual environments where
-                        // services take a few tries to come up. To enable,
-                        // compile with RUSTFLAGS="--cfg svcadm_autoclear"
-                        #[cfg(svcadm_autoclear)]
+                    } else if clear_maintenance {
                         if let Some(zname) = zone {
                             if let Err(out) =
                                 tokio::process::Command::new(crate::PFEXEC)
@@ -79,6 +76,8 @@ mod inner {
                                 warn!(log, "clearing service maintenance failed: {out}");
                             };
                         }
+                    } else {
+                       // loop
                     }
                 }
                 return Err(backoff::BackoffError::transient(
