@@ -91,6 +91,73 @@ mod inner {
             internal_message: format!("Failed to wait for service: {}", e),
         })
     }
+
+    // pub async fn clear_maintenance_state<'a, 'b>(
+    //     zone: Option<&'a str>,
+    //     log: Logger,
+    // ) -> Result<(), Error> {
+    //     let name = smf::PropertyName::new("restarter", "state").unwrap();
+
+    //     let log_notification_failure = |error, delay| {
+    //         warn!(
+    //             log,
+    //             "clearning services maintenance on {:?} failed: {}. retry in {:?}",
+    //             zone,
+    //             error,
+    //             delay
+    //         );
+    //     };
+    //     backoff::retry_notify(
+    //         backoff::retry_policy_local(),
+    //         || async {
+    //             let mut p = smf::Properties::new();
+    //             let properties = {
+    //                 if let Some(zone) = zone {
+    //                     p.zone(zone)
+    //                 } else {
+    //                     &mut p
+    //                 }
+    //             };
+    //             for property in properties.lookup(){
+
+    //             }
+    //             if let Ok(value) = properties.lookup().run(&name, &fmri) {
+    //                 debug!(log, "wait_for_service {:?}, current value {:?}", name, value.value());
+    //                 if value.value()
+    //                     == &smf::PropertyValue::Astring("online".to_string())
+    //                 {
+    //                     return Ok(());
+    //                 } else if clear_maintenance {
+    //                     if let Some(zname) = zone {
+    //                         if let Err(out) =
+    //                             tokio::process::Command::new(crate::PFEXEC)
+    //                                 .env_clear()
+    //                                 .arg("svcadm")
+    //                                 .arg("-z")
+    //                                 .arg(zname)
+    //                                 .arg("clear")
+    //                                 .arg("*")
+    //                                 .output()
+    //                                 .await
+    //                         {
+    //                             warn!(log, "clearing service maintenance failed: {out}");
+    //                         };
+    //                     }
+    //                 } else {
+    //                    // loop
+    //                 }
+    //             }
+    //             return Err(backoff::BackoffError::transient(
+    //                 "Property not found",
+    //             ));
+    //         },
+    //         log_notification_failure,
+    //     )
+    //     .await
+    //     .map_err(|e| Error::InternalError {
+    //         internal_message: format!("Failed to wait for service: {}", e),
+    //     })
+    // }
 }
 
 cfg_if! {
