@@ -496,7 +496,7 @@ impl RunningZone {
         // services are up, so future requests to create network addresses
         // or manipulate services will work.
         let fmri = "svc:/milestone/single-user:default";
-        wait_for_service(Some(&zone.name), fmri, zone.log.clone(), false)
+        wait_for_service(Some(&zone.name), fmri, zone.log.clone(), true)
             .await
             .map_err(|_| BootError::Timeout {
                 service: fmri.to_string(),

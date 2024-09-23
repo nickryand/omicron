@@ -3201,9 +3201,6 @@ impl ServiceManager {
         runtime
             .ensure_online_service("svc:/oxide/zone-network-setup:default")
             .await?;
-        runtime
-            .ensure_online_service("svc:/network/datalink-management:default")
-            .await?;
 
         Ok(OmicronZone { runtime, config })
     }
