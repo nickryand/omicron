@@ -4554,13 +4554,6 @@ impl ServiceManager {
         *sled_zone =
             SwitchZoneState::Running { request: request.clone(), zone };
 
-        /// The zone-network-setup service is racy and can fall into maintenance.
-        /// Ensure that it gets cleared.
-        zone.ensure_online_service("svc:/oxide/zone-network-setup:default")
-            .await?;
-        zone.ensure_online_service("svc:/network/datalink-management:default")
-            .await?;
-
         Ok(())
     }
 
