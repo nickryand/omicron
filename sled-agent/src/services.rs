@@ -707,6 +707,10 @@ pub(crate) enum TimeSyncConfig {
 #[derive(Clone)]
 pub struct ServiceManager {
     inner: Arc<ServiceManagerInner>,
+    // Waits are used for service zone specific services that
+    // should not fall into maintenance. On slow (lab) systems
+    // services can fall into maintenance if setup takes to long.
+    waits: Arc<Mutex<Vec<String>>>,
 }
 
 impl ServiceManager {
@@ -770,6 +774,7 @@ impl ServiceManager {
                 ledger_directory_override: OnceCell::new(),
                 image_directory_override: OnceCell::new(),
             }),
+            waits: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
@@ -1877,6 +1882,12 @@ impl ServiceManager {
                     .map_err(|err| {
                         Error::io("Failed to setup CRDB profile", err)
                     })?;
+
+                // let waits: Arc<Mutex<_>> = Arc::clone(&self.waits);
+                let mut lock = self.waits.lock().await;
+                let waits: &mut Vec<String> = lock.as_mut();
+                waits.push(String::from("svc:/oxide/cockroachdb:default"));
+
                 RunningZone::boot(installed_zone).await?
             }
 
