@@ -774,7 +774,9 @@ impl ServiceManager {
                 ledger_directory_override: OnceCell::new(),
                 image_directory_override: OnceCell::new(),
             }),
-            waits: Arc::new(Mutex::new(Vec::new())),
+            waits: Arc::new(Mutex::new(vec![String::from(
+                "svc:/oxide/zone-network-setup:default",
+            )])),
         }
     }
 
@@ -1883,10 +1885,7 @@ impl ServiceManager {
                         Error::io("Failed to setup CRDB profile", err)
                     })?;
 
-                // let waits: Arc<Mutex<_>> = Arc::clone(&self.waits);
-                let mut lock = self.waits.lock().await;
-                let waits: &mut Vec<String> = lock.as_mut();
-                waits.push(String::from("svc:/oxide/cockroachdb:default"));
+                self.set_wait(String::from("svc:/oxide/cockroachdb:default"));
 
                 RunningZone::boot(installed_zone).await?
             }
@@ -3214,6 +3213,13 @@ impl ServiceManager {
         Ok(running_zone)
     }
 
+    async fn set_wait(&self, fmri: String) {
+        // let waits: Arc<Mutex<_>> = Arc::clone(&self.waits);
+        let mut lock = self.waits.lock().await;
+        let waits: &mut Vec<String> = lock.as_mut();
+        waits.push(fmri);
+    }
+
     // Ensures that a single Omicron zone is running.
     //
     // This method is NOT idempotent.
@@ -3270,11 +3276,10 @@ impl ServiceManager {
             )
             .await?;
 
-        // The zone-network-setup service is racy and can fall into maintenance.
-        // Ensure that it gets cleared.
-        runtime
-            .ensure_online_service("svc:/oxide/zone-network-setup:default")
-            .await?;
+        // Ensure all services are up!
+        for fmri in self.waits.into_inner().iter() {
+            runtime.ensure_online_service(fmri).await?;
+        }
 
         Ok(OmicronZone { runtime, config })
     }
