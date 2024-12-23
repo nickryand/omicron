@@ -56,7 +56,7 @@ mod inner {
                     }
                 };
                 if let Ok(value) = properties.lookup().run(&name, &fmri) {
-                    debug!(log, "wait_for_service {:?}, current value {:?}", name, value.value());
+                    debug!(log, "wait_for_service `{:?}` {:?}, current value {:?}", fmri, name, value.value());
                     if value.value()
                         == &smf::PropertyValue::Astring("online".to_string())
                     {
