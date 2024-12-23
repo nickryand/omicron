@@ -1885,7 +1885,8 @@ impl ServiceManager {
                         Error::io("Failed to setup CRDB profile", err)
                     })?;
 
-                self.set_wait(String::from("svc:/oxide/cockroachdb:default"));
+                self.set_wait(String::from("svc:/oxide/cockroachdb:default"))
+                    .await;
 
                 RunningZone::boot(installed_zone).await?
             }
