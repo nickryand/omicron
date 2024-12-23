@@ -36,7 +36,8 @@ mod inner {
         let log_notification_failure = |error, delay| {
             warn!(
                 log,
-                "wait for service {:?} failed: {}. retry in {:?}",
+                "wait for service `{:?}` {:?} failed: {}. retry in {:?}",
+                fmri,
                 zone,
                 error,
                 delay
