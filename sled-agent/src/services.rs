@@ -3277,7 +3277,7 @@ impl ServiceManager {
             .await?;
 
         // Ensure all services are up!
-        for fmri in self.waits.into_inner().iter() {
+        for fmri in self.waits.lock().unwrap().iter() {
             runtime.ensure_online_service(fmri).await?;
         }
 
