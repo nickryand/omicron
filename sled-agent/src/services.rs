@@ -1554,7 +1554,7 @@ impl ServiceManager {
             ServiceBuilder::new("network/dns/client")
                 .add_instance(ServiceInstanceBuilder::new("default"));
 
-        let mut waits = vec["svc:/oxide/zone-network-setup:default"];
+        let mut waits = vec!["svc:/oxide/zone-network-setup:default"];
         let running_zone = match &request {
             ZoneArgs::Omicron(OmicronZoneConfigLocal {
                 zone:
