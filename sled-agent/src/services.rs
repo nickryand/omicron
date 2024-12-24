@@ -3201,7 +3201,7 @@ impl ServiceManager {
             }
         }
 
-        running_zone.waits.append(waits);
+        running_zone.waits.as_mut().append(waits);
 
         Ok(running_zone)
     }
