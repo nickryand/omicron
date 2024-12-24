@@ -3202,7 +3202,7 @@ impl ServiceManager {
         }
 
         for fmri in waits {
-            running_zone.ensure_online_service(fmri).await;
+            running_zone.ensure_online_service(fmri).await?;
         }
 
         Ok(running_zone)
