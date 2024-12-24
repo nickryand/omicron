@@ -508,11 +508,8 @@ impl RunningZone {
             .await?
             .ok_or_else(|| BootError::NoZoneId { zone: zone.name.clone() })?;
 
-        let running_zone = RunningZone {
-            id: Some(id),
-            inner: zone,
-            waits: vec![String::from("svc:/oxide/zone-network-setup:default")],
-        };
+        let running_zone =
+            RunningZone { id: Some(id), inner: zone, waits: Vec::new() };
 
         Ok(running_zone)
     }

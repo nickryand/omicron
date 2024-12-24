@@ -1554,7 +1554,8 @@ impl ServiceManager {
             ServiceBuilder::new("network/dns/client")
                 .add_instance(ServiceInstanceBuilder::new("default"));
 
-        let mut waits = vec!["svc:/oxide/zone-network-setup:default"];
+        let mut waits =
+            vec![String::from("svc:/oxide/zone-network-setup:default")];
         let running_zone = match &request {
             ZoneArgs::Omicron(OmicronZoneConfigLocal {
                 zone:
@@ -1847,7 +1848,8 @@ impl ServiceManager {
                         ServiceInstanceBuilder::new("default")
                             .add_property_group(cockroachdb_config),
                     );
-                waits.push("svc:/oxide/oxide/cockroachdb:default");
+                waits
+                    .push(String::from("svc:/oxide/oxide/cockroachdb:default"));
 
                 // Configure the Omicron cockroach-admin service.
                 let cockroach_admin_config =
