@@ -1849,7 +1849,7 @@ impl ServiceManager {
                             .add_property_group(cockroachdb_config),
                     );
                 waits
-                    .push(String::from("svc:/oxide/oxide/cockroachdb:default"));
+                    .push(String::from("svc:/oxide/cockroachdb:default"));
 
                 // Configure the Omicron cockroach-admin service.
                 let cockroach_admin_config =
