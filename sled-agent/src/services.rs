@@ -3203,7 +3203,7 @@ impl ServiceManager {
             }
         }
 
-        let mut zone_waits = &mut running_zone.waits;
+        let zone_waits = &mut running_zone.waits;
         zone_waits.append(&mut waits);
 
         Ok(running_zone)
