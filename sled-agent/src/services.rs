@@ -1554,6 +1554,7 @@ impl ServiceManager {
             ServiceBuilder::new("network/dns/client")
                 .add_instance(ServiceInstanceBuilder::new("default"));
 
+        let mut waits = vec["svc:/oxide/zone-network-setup:default"];
         let running_zone = match &request {
             ZoneArgs::Omicron(OmicronZoneConfigLocal {
                 zone:
@@ -1805,7 +1806,6 @@ impl ServiceManager {
                     })?;
                 RunningZone::boot(installed_zone).await?
             }
-
             ZoneArgs::Omicron(OmicronZoneConfigLocal {
                 zone:
                     OmicronZoneConfig {
@@ -1847,6 +1847,7 @@ impl ServiceManager {
                         ServiceInstanceBuilder::new("default")
                             .add_property_group(cockroachdb_config),
                     );
+                waits.push("svc:/oxide/oxide/cockroachdb:default");
 
                 // Configure the Omicron cockroach-admin service.
                 let cockroach_admin_config =
@@ -3200,6 +3201,10 @@ impl ServiceManager {
             }
         }
 
+        for fmri in waits {
+            running_zone.ensure_online_service(fmri).await;
+        }
+
         Ok(running_zone)
     }
 
@@ -3259,11 +3264,11 @@ impl ServiceManager {
             )
             .await?;
 
-        /// The zone-network-setup service is racy and can fall into maintenance.
-        /// Ensure that it gets cleared.
-        runtime
-            .ensure_online_service("svc:/oxide/zone-network-setup:default")
-            .await?;
+        // /// The zone-network-setup service is racy and can fall into maintenance.
+        // /// Ensure that it gets cleared.
+        // runtime
+        //     .ensure_online_service("svc:/oxide/zone-network-setup:default")
+        //     .await?;
 
         Ok(OmicronZone { runtime, config })
     }
