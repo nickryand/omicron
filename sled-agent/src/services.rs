@@ -1556,7 +1556,7 @@ impl ServiceManager {
 
         let mut waits =
             vec![String::from("svc:/oxide/zone-network-setup:default")];
-        let running_zone = match &request {
+        let mut running_zone = match &request {
             ZoneArgs::Omicron(OmicronZoneConfigLocal {
                 zone:
                     OmicronZoneConfig {
