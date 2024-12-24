@@ -3201,9 +3201,7 @@ impl ServiceManager {
             }
         }
 
-        for fmri in waits {
-            running_zone.ensure_online_service(fmri).await?;
-        }
+        running_zone.waits.append(waits);
 
         Ok(running_zone)
     }
@@ -3264,11 +3262,9 @@ impl ServiceManager {
             )
             .await?;
 
-        // /// The zone-network-setup service is racy and can fall into maintenance.
-        // /// Ensure that it gets cleared.
-        // runtime
-        //     .ensure_online_service("svc:/oxide/zone-network-setup:default")
-        //     .await?;
+        // The zone-network-setup service is racy and can fall into maintenance.
+        // Ensure that it gets cleared.
+        runtime.ensure_online_services().await?;
 
         Ok(OmicronZone { runtime, config })
     }

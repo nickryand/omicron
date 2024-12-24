@@ -342,6 +342,7 @@ pub struct RunningZone {
     // The `zoneid_t` for the zone, while it's running, or `None` if not.
     id: Option<i32>,
     inner: InstalledZone,
+    pub waits: Vec<String>,
 }
 
 impl RunningZone {
@@ -507,7 +508,11 @@ impl RunningZone {
             .await?
             .ok_or_else(|| BootError::NoZoneId { zone: zone.name.clone() })?;
 
-        let running_zone = RunningZone { id: Some(id), inner: zone };
+        let running_zone = RunningZone {
+            id: Some(id),
+            inner: zone,
+            waits: vec![String::from("svc:/oxide/zone-network-setup:default")],
+        };
 
         Ok(running_zone)
     }
@@ -516,21 +521,20 @@ impl RunningZone {
     /// There can be a race condition between smf configuration properties being set and
     /// the startup of a service that uses those settings. This method allows us to setup a
     /// watchdog that can wait for any service and clear it if needed.
-    pub async fn ensure_online_service(
-        &self,
-        fmri: &str,
-    ) -> Result<(), BootError> {
-        wait_for_service(
-            Some(&self.inner.name),
-            fmri,
-            self.inner.log.clone(),
-            true,
-        )
-        .await
-        .map_err(|_| BootError::Timeout {
-            service: fmri.to_string(),
-            zone: self.inner.name.to_string(),
-        })?;
+    pub async fn ensure_online_services(&self) -> Result<(), BootError> {
+        for fmri in &self.waits {
+            wait_for_service(
+                Some(&self.inner.name),
+                fmri,
+                self.inner.log.clone(),
+                true,
+            )
+            .await
+            .map_err(|_| BootError::Timeout {
+                service: fmri.to_string(),
+                zone: self.inner.name.to_string(),
+            })?;
+        }
         Ok(())
     }
 
